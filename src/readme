@@ -1,0 +1,101 @@
+Running on local :
+
+
+On local machine : (where server and client are on same host)
+
+Directory from where you will run commands is the “src” directory in the project.
+Example = C:\Users\malya\Scalable\Scalable3-OWN\src>
+
+1. compile all java files by running
+   --> C:\Users\malya\Scalable\Scalable3-OWN\src javac *.java
+
+2. try to start multiple servers on different ports
+
+       -->C:\Users\malya\Scalable\Scalable3-OWN\src>java Coordinator localhost 1111
+          2022-12-09T14:24:04.689 : New Storage created for the server
+          2022-12-09T14:24:04.832 : Server is listening on port 1111
+
+       -->C:\Users\malya\Scalable\Scalable3-OWN\src>java Coordinator localhost 1112
+          2022-12-09T14:24:04.689 : New Storage created for the server
+          2022-12-09T14:24:04.832 : Server is listening on port 1112
+
+       -->C:\Users\malya\Scalable\Scalable3-OWN\src>java Coordinator localhost 1113
+          2022-12-09T14:24:04.689 : New Storage created for the server
+          2022-12-09T14:24:04.832 : Server is listening on port 1113
+
+       -->C:\Users\malya\Scalable\Scalable3-OWN\src>java Coordinator localhost 1114
+          2022-12-09T14:24:04.689 : New Storage created for the server
+          2022-12-09T14:24:04.832 : Server is listening on port 1114
+
+3. Now start a client
+
+       C:\Users\malya\Scalable\Scalable3-OWN\src>java Client localhost
+       2022-12-09T14:25:55.279 : Enter n no of servers available for client to connect at this IP address
+       4
+       2022-12-09T14:25:56.872 : Enter 4 of server port nos
+       1111
+       1112
+       1113
+       1114
+       We have 4 machines, enter one machine port address from above to connect
+       1111
+       Connected to the server on port  1111
+       doing pre-population PUT, GET, DELETE on server with port 1111
+
+4. you can start multiple clients...
+
+
+
+
+            ***************************************************************************
+
+
+
+
+Running On docker instructions :
+
+1. create a network first
+   --> docker network create <NETWORK_NAME>
+   --> docker network create project
+
+2. first create server docker image by running below command (here we provided server as docker image name)
+
+   --> docker build -t <IMAGE_NAME> --target server-build .
+   --> docker build -t server --target server-build .
+
+3. next create client docker image by running below command (here we provided client as docker image name)
+
+   --> docker build -t <IMAGE_NAME> --target server-build .
+   --> docker build -t client --target client-build .
+
+4. Now start server and client docket containers
+
+   (for server)
+   --> docker run -it --rm --name server --network project <docker image id of server>
+
+    and exec commands on docker container to start some servers like below
+      --> docker exec -it d2248cfc5ced /bin/sh -c "java Coordinator 1111 & java Coordinator 1112 & java Coordinator 1113 & java Coordinator 1114 & java Coordinator 1115"
+      --> d2248cfc5ced - container id
+
+   (for client)
+   --> docker run -it --rm --name client --network project <docker image id of client>
+
+5. now you see 4 servers started by using different ports
+
+6. now start a client to connect to any one of the available servers by using below command
+
+        ( docker run -it --rm --name client --network project <client docker image id> java Client <server ip address> )
+   -->  docker run -it --rm --name client --network project eb5c53604f5f java Client 48632e3a284c
+
+7. here sometime the client cannot able to find host name by its address (may be the network or we need to populate the ipaddress and hostname in address)
+   but over functionality is fine.
+
+
+
+
+
+
+NOTES:
+
+1. I implemented the project to retry (after wait for sometime) if any one of the server fails to accept in prepare and go request.
+   to experience this feature, try to stop one server and do a put operation, and see logs in the requested server......
